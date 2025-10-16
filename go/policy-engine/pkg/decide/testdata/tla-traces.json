@@ -1,0 +1,124 @@
+{
+ "source": "spec/Decide.tla",
+ "generator": "TLC, all reachable states",
+ "cases": [
+  {
+   "inScope": true,
+   "matched": [],
+   "outcome": "forbid"
+  },
+  {
+   "inScope": true,
+   "matched": [
+    "permit"
+   ],
+   "outcome": "allow"
+  },
+  {
+   "inScope": true,
+   "matched": [
+    "hold"
+   ],
+   "outcome": "hold"
+  },
+  {
+   "inScope": true,
+   "matched": [
+    "forbid"
+   ],
+   "outcome": "forbid"
+  },
+  {
+   "inScope": true,
+   "matched": [
+    "hold",
+    "permit"
+   ],
+   "outcome": "hold"
+  },
+  {
+   "inScope": true,
+   "matched": [
+    "forbid",
+    "permit"
+   ],
+   "outcome": "forbid"
+  },
+  {
+   "inScope": true,
+   "matched": [
+    "forbid",
+    "hold"
+   ],
+   "outcome": "forbid"
+  },
+  {
+   "inScope": true,
+   "matched": [
+    "forbid",
+    "hold",
+    "permit"
+   ],
+   "outcome": "forbid"
+  },
+  {
+   "inScope": false,
+   "matched": [],
+   "outcome": "forbid"
+  },
+  {
+   "inScope": false,
+   "matched": [
+    "permit"
+   ],
+   "outcome": "forbid"
+  },
+  {
+   "inScope": false,
+   "matched": [
+    "hold"
+   ],
+   "outcome": "forbid"
+  },
+  {
+   "inScope": false,
+   "matched": [
+    "forbid"
+   ],
+   "outcome": "forbid"
+  },
+  {
+   "inScope": false,
+   "matched": [
+    "hold",
+    "permit"
+   ],
+   "outcome": "forbid"
+  },
+  {
+   "inScope": false,
+   "matched": [
+    "forbid",
+    "permit"
+   ],
+   "outcome": "forbid"
+  },
+  {
+   "inScope": false,
+   "matched": [
+    "forbid",
+    "hold"
+   ],
+   "outcome": "forbid"
+  },
+  {
+   "inScope": false,
+   "matched": [
+    "forbid",
+    "hold",
+    "permit"
+   ],
+   "outcome": "forbid"
+  }
+ ]
+}
