@@ -1,0 +1,46 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go/go.mod
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - run: uv sync
+      - run: make lint
+      - run: make test
+      - run: make example
+
+  postgres-journal:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: runtime
+          POSTGRES_PASSWORD: runtime
+          POSTGRES_DB: runtime
+        ports: ["5432:5432"]
+        options: --health-cmd pg_isready --health-interval 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go/go.mod
+      - run: psql postgres://runtime:runtime@localhost/runtime -f go/agent-runtime/migrations/0001_journal.sql
+      - run: cd go && go test -count=1 ./agent-runtime/internal/journal/
+        env:
+          JOURNAL_TEST_DSN: postgres://runtime:runtime@localhost/runtime
