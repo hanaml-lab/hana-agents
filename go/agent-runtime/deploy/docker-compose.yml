@@ -1,0 +1,47 @@
+# PostgreSQL for the journal, runtimed, policyd and the browser-gym tool server.
+#   docker compose -f go/agent-runtime/deploy/docker-compose.yml up -d --build
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: runtime
+      POSTGRES_PASSWORD: runtime
+      POSTGRES_DB: runtime
+    ports: ["5432:5432"]
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+      - ../migrations:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "runtime"]
+      interval: 5s
+      retries: 10
+
+  tools:
+    build:
+      context: ../../..
+      dockerfile: packages/browser-gym/docker/Dockerfile.chromium
+    command: ["serve", "--host", "0.0.0.0", "--port", "7071"]
+    ports: ["7071:7071"]
+
+  runtimed:
+    image: golang:1.25
+    working_dir: /src/go
+    volumes: ["../../..:/src:ro"]
+    command: >
+      go run ./agent-runtime/cmd/runtimed -addr :7070
+      -journal postgres://runtime:runtime@postgres/runtime
+      -policies policy-engine/policies/examples -tools http://tools:7071
+    ports: ["7070:7070"]
+    depends_on:
+      postgres: {condition: service_healthy}
+      tools: {condition: service_started}
+
+  policyd:
+    image: golang:1.25
+    working_dir: /src/go
+    volumes: ["../../..:/src:ro"]
+    command: go run ./policy-engine/cmd/policyd -addr :8181 -policies policy-engine/policies/examples
+    ports: ["8181:8181"]
+
+volumes:
+  pg-data:
