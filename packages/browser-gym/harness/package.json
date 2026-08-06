@@ -1,0 +1,15 @@
+{
+  "name": "@hanaml/browser-gym-harness",
+  "version": "0.3.4",
+  "private": true,
+  "description": "Accessibility-tree pruning for Chromium pages, matching browser_gym/observe.py",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "a11y-snapshot.ts",
+  "engines": {
+    "node": ">=22.18"
+  },
+  "scripts": {
+    "test": "node --test"
+  }
+}
