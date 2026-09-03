@@ -1,0 +1,35 @@
+instruction: Deactivate the user account of r.okafor and leave every other account as it is.
+params: {user: r.okafor, status: inactive}
+max_steps: 30
+site:
+  start: /admin/users
+  db:
+    users:
+      - {id: r.okafor, role: editor, status: active}
+      - {id: m.lindqvist, role: admin, status: active}
+      - {id: t.brennan, role: viewer, status: active}
+  pages:
+    /admin/users:
+      title: Users
+      links:
+        - {text: m.lindqvist, to: /admin/users/m.lindqvist}
+        - {text: r.okafor, to: /admin/users/r.okafor}
+        - {text: t.brennan, to: /admin/users/t.brennan}
+    /admin/users/m.lindqvist:
+      title: m.lindqvist
+      forms:
+        - {id: user, table: users, key: {id: m.lindqvist}, irreversible: true, submit: Save user,
+           fields: [{name: role, label: Role, options: [viewer, editor, admin]}, {name: status, label: Status, options: [active, inactive]}]}
+    /admin/users/r.okafor:
+      title: r.okafor
+      forms:
+        - {id: user, table: users, key: {id: r.okafor}, irreversible: true, submit: Save user,
+           fields: [{name: role, label: Role, options: [viewer, editor, admin]}, {name: status, label: Status, options: [active, inactive]}]}
+    /admin/users/t.brennan:
+      title: t.brennan
+      forms:
+        - {id: user, table: users, key: {id: t.brennan}, irreversible: true, submit: Save user,
+           fields: [{name: role, label: Role, options: [viewer, editor, admin]}, {name: status, label: Status, options: [active, inactive]}]}
+checks:
+  - {table: users, where: {id: r.okafor}, expect: {status: inactive, role: editor}}
+  - {table: users, unchanged_except: [r.okafor]}

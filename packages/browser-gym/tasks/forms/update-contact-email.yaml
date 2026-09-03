@@ -1,0 +1,28 @@
+instruction: Set the contact email for supplier Calder Freight to accounts@calderfreight.co.uk.
+params: {supplier: Calder Freight, email: accounts@calderfreight.co.uk}
+max_steps: 30
+site:
+  start: /suppliers
+  db:
+    suppliers:
+      - {id: S-07, name: Acme Paper, email: billing@acmepaper.example}
+      - {id: S-12, name: Calder Freight, email: info@calderfreight.co.uk}
+  pages:
+    /suppliers:
+      title: Suppliers
+      links:
+        - {text: Acme Paper, to: /suppliers/S-07}
+        - {text: Calder Freight, to: /suppliers/S-12}
+    /suppliers/S-07:
+      title: Acme Paper
+      forms:
+        - {id: contact, table: suppliers, key: {id: S-07}, irreversible: false, submit: Save,
+           fields: [{name: email, label: Contact email}]}
+    /suppliers/S-12:
+      title: Calder Freight
+      forms:
+        - {id: contact, table: suppliers, key: {id: S-12}, irreversible: true, submit: Save,
+           fields: [{name: email, label: Contact email}]}
+checks:
+  - {table: suppliers, where: {id: S-12}, expect: {email: accounts@calderfreight.co.uk}}
+  - {table: suppliers, unchanged_except: [S-12]}

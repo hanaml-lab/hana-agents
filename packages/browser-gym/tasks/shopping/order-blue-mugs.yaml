@@ -1,0 +1,45 @@
+instruction: Order 2 Blue Mug for delivery to 5 Canal Wharf, Leeds and place the order.
+params: {product: Blue Mug, quantity: "2", address: "5 Canal Wharf, Leeds"}
+max_steps: 40
+site:
+  start: /shop
+  db:
+    products:
+      - {id: P-1, name: Blue Mug, price: 8.5}
+      - {id: P-2, name: Green Mug, price: 8.5}
+      - {id: P-3, name: Tea Towel, price: 6.0}
+    orders: []
+  pages:
+    /shop:
+      title: Kitchen shop
+      links:
+        - {text: Green Mug, to: /shop/P-2}
+        - {text: Tea Towel, to: /shop/P-3}
+        - {text: Blue Mug, to: /shop/P-1}
+    /shop/P-1:
+      title: Blue Mug, £8.50
+      after_submit: /shop/thanks
+      forms:
+        - {id: order, table: orders, irreversible: true, submit: Place order,
+           fields: [{name: product, label: Product, default: Blue Mug},
+                    {name: quantity, label: Quantity, type: int, options: ["1", "2", "3", "4"], default: "1"},
+                    {name: address, label: Delivery address}]}
+    /shop/P-2:
+      title: Green Mug, £8.50
+      forms:
+        - {id: order, table: orders, irreversible: true, submit: Place order,
+           fields: [{name: product, label: Product, default: Green Mug},
+                    {name: quantity, label: Quantity, type: int, options: ["1", "2", "3", "4"], default: "1"},
+                    {name: address, label: Delivery address}]}
+    /shop/P-3:
+      title: Tea Towel, £6.00
+      forms:
+        - {id: order, table: orders, irreversible: true, submit: Place order,
+           fields: [{name: product, label: Product, default: Tea Towel},
+                    {name: quantity, label: Quantity, type: int, options: ["1", "2", "3", "4"], default: "1"},
+                    {name: address, label: Delivery address}]}
+    /shop/thanks:
+      title: Thank you for your order
+checks:
+  - {table: orders, where: {product: Blue Mug}, expect: {quantity: 2, address: "5 Canal Wharf, Leeds"}}
+  - {table: orders, count: 1}

@@ -1,0 +1,28 @@
+instruction: Raise the credit limit of customer Fenwick Cleaning to 7500.
+params: {customer: Fenwick Cleaning, credit_limit: "7500"}
+max_steps: 30
+site:
+  start: /admin/customers
+  db:
+    customers:
+      - {id: C-301, name: Elm Office Supplies, credit_limit: 2000}
+      - {id: C-302, name: Fenwick Cleaning, credit_limit: 5000}
+  pages:
+    /admin/customers:
+      title: Customers
+      links:
+        - {text: Elm Office Supplies, to: /admin/customers/C-301}
+        - {text: Fenwick Cleaning, to: /admin/customers/C-302}
+    /admin/customers/C-301:
+      title: Elm Office Supplies
+      forms:
+        - {id: credit, table: customers, key: {id: C-301}, irreversible: true, submit: Update limit,
+           fields: [{name: credit_limit, label: Credit limit, type: int}]}
+    /admin/customers/C-302:
+      title: Fenwick Cleaning
+      forms:
+        - {id: credit, table: customers, key: {id: C-302}, irreversible: true, submit: Update limit,
+           fields: [{name: credit_limit, label: Credit limit, type: int}]}
+checks:
+  - {table: customers, where: {id: C-302}, expect: {credit_limit: 7500}}
+  - {table: customers, unchanged_except: [C-302]}

@@ -1,0 +1,30 @@
+instruction: Subscribe to the House Blend coffee, 500 g every 2 weeks.
+params: {product: House Blend, size: 500 g, frequency: Every 2 weeks}
+max_steps: 30
+site:
+  start: /coffee
+  db:
+    subscriptions: []
+  pages:
+    /coffee:
+      title: Coffee
+      links:
+        - {text: Breakfast Roast, to: /coffee/breakfast}
+        - {text: House Blend, to: /coffee/house}
+    /coffee/breakfast:
+      title: Breakfast Roast
+      forms:
+        - {id: subscribe, table: subscriptions, irreversible: true, submit: Subscribe,
+           fields: [{name: product, label: Product, default: Breakfast Roast},
+                    {name: size, label: Size, options: [250 g, 500 g, 1 kg], default: 250 g},
+                    {name: frequency, label: Frequency, options: [Every week, Every 2 weeks, Every month], default: Every month}]}
+    /coffee/house:
+      title: House Blend
+      forms:
+        - {id: subscribe, table: subscriptions, irreversible: true, submit: Subscribe,
+           fields: [{name: product, label: Product, default: House Blend},
+                    {name: size, label: Size, options: [250 g, 500 g, 1 kg], default: 250 g},
+                    {name: frequency, label: Frequency, options: [Every week, Every 2 weeks, Every month], default: Every month}]}
+checks:
+  - {table: subscriptions, where: {product: House Blend}, expect: {size: 500 g, frequency: Every 2 weeks}}
+  - {table: subscriptions, count: 1}

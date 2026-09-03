@@ -1,0 +1,46 @@
+instruction: Change the billing address of account ACC-1042 to 14 Mill Lane, Leeds, LS2 7AB.
+params: {account: ACC-1042, street: 14 Mill Lane, city: Leeds, postcode: LS2 7AB}
+max_steps: 50
+site:
+  start: /accounts
+  db:
+    accounts:
+      - {id: ACC-1041, street: 9 Station Road, city: Hull, postcode: HU1 2AA}
+      - {id: ACC-1042, street: 3 Park Row, city: York, postcode: YO1 7HH}
+      - {id: ACC-1043, street: 22 Quay Street, city: Bristol, postcode: BS1 4DJ}
+  pages:
+    /accounts:
+      title: Accounts
+      text: [Choose an account to manage its billing details.]
+      links:
+        - {text: ACC-1041, to: /accounts/ACC-1041}
+        - {text: ACC-1042, to: /accounts/ACC-1042}
+        - {text: ACC-1043, to: /accounts/ACC-1043}
+    /accounts/ACC-1041:
+      title: Account ACC-1041
+      links: [{text: Billing address, to: /accounts/ACC-1041/billing}]
+    /accounts/ACC-1042:
+      title: Account ACC-1042
+      links: [{text: Billing address, to: /accounts/ACC-1042/billing}]
+    /accounts/ACC-1043:
+      title: Account ACC-1043
+      links: [{text: Billing address, to: /accounts/ACC-1043/billing}]
+    /accounts/ACC-1041/billing:
+      title: Billing address
+      forms:
+        - {id: billing, table: accounts, key: {id: ACC-1041}, irreversible: true, submit: Save address,
+           fields: [{name: street, label: Street}, {name: city, label: City}, {name: postcode, label: Postcode}]}
+    /accounts/ACC-1042/billing:
+      title: Billing address
+      after_submit: /accounts/ACC-1042
+      forms:
+        - {id: billing, table: accounts, key: {id: ACC-1042}, irreversible: true, submit: Save address,
+           fields: [{name: street, label: Street}, {name: city, label: City}, {name: postcode, label: Postcode}]}
+    /accounts/ACC-1043/billing:
+      title: Billing address
+      forms:
+        - {id: billing, table: accounts, key: {id: ACC-1043}, irreversible: true, submit: Save address,
+           fields: [{name: street, label: Street}, {name: city, label: City}, {name: postcode, label: Postcode}]}
+checks:
+  - {table: accounts, where: {id: ACC-1042}, expect: {street: 14 Mill Lane, city: Leeds, postcode: LS2 7AB}}
+  - {table: accounts, unchanged_except: [ACC-1042]}
