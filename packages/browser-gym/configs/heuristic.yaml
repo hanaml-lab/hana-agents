@@ -1,0 +1,4 @@
+agent: heuristic
+observe: [a11y]
+verifier: true
+backtrack: true
