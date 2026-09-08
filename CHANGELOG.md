@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.0 (2026-09-08)
+
+- browser-gym: site simulator, verifier, backtracking, step-by-step scoring
+
 ## 0.3.0 (2026-08-03)
 
 - runtimed and agentctl
