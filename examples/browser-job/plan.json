@@ -1,0 +1,20 @@
+{
+  "goal": "Change the billing address of account ACC-1042 to 14 Mill Lane, Leeds, LS2 7AB",
+  "principal": "agent:billing-assistant",
+  "budget": {"steps": 30},
+  "plan": [
+    {"id": "open", "tool": "browser.open", "args": {"task": "forms/change-billing-address", "seed": 3},
+     "accept": [{"path": "session", "op": "nonempty"}]},
+    {"id": "account", "tool": "browser.click", "args": {"session": "${steps.open.session}", "target": "link:ACC-1042"},
+     "accept": [{"path": "error", "op": "equals", "value": ""}]},
+    {"id": "billing", "tool": "browser.click", "args": {"session": "${steps.open.session}", "target": "link:Billing address"},
+     "accept": [{"path": "a11y", "op": "contains", "value": "Save address"}]},
+    {"id": "street", "tool": "browser.type", "args": {"session": "${steps.open.session}", "target": "field:street", "text": "14 Mill Lane"}},
+    {"id": "city", "tool": "browser.type", "args": {"session": "${steps.open.session}", "target": "field:city", "text": "Leeds"}},
+    {"id": "postcode", "tool": "browser.type", "args": {"session": "${steps.open.session}", "target": "field:postcode", "text": "LS2 7AB"}},
+    {"id": "submit", "tool": "browser.submit", "args": {"session": "${steps.open.session}", "target": "submit:billing", "irreversible": true},
+     "accept": [{"path": "blocked", "op": "equals", "value": ""}, {"path": "done", "op": "equals", "value": true}]},
+    {"id": "score", "tool": "browser.score", "args": {"session": "${steps.open.session}"},
+     "accept": [{"path": "success", "op": "equals", "value": true}]}
+  ]
+}

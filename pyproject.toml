@@ -1,0 +1,30 @@
+# Workspace root for the Python packages; the Go code lives in go/ with its own go.mod.
+[project]
+name = "hana-agents-workspace"
+version = "0.5.0"
+requires-python = ">=3.10"
+dependencies = ["agent-runtime-sdk", "browser-gym"]
+
+[dependency-groups]
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[tool.uv]
+package = false
+
+[tool.uv.workspace]
+members = ["packages/agent-runtime-sdk", "packages/browser-gym"]
+
+[tool.uv.sources]
+agent-runtime-sdk = { workspace = true }
+browser-gym = { workspace = true }
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = ["B905"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["agent_runtime", "browser_gym"]
