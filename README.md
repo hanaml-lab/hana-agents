@@ -39,3 +39,41 @@ How the pieces connect:
 - `browser-gym serve` publishes the environment as `browser.*` tools through `agent_runtime.ToolServer`; runtimed
   discovers them and calls them with idempotency keys, so a resumed job never opens a second session or submits twice.
 - `go/policy-engine/policies/examples/browser.cedar` holds every irreversible `browser.submit` for a person.
+
+## Quickstart
+
+```bash
+git clone https://github.com/hanaml-lab/hana-agents && cd hana-agents
+uv sync              # Python packages
+make build           # runtimed, agentctl, policyd into bin/
+make example         # a browser task as a runtime job: held submit, approval, score
+```
+
+`examples/browser-job/run.sh` starts the browser-gym tool server and runtimed, starts the job in
+`examples/browser-job/plan.json`, tails it to the held submit, approves it, and prints the final score. Everything
+runs offline. `go/agent-runtime/examples/invoice-reconcile` is an in-process Go example of a back-office job you can
+interrupt and resume.
+
+## Development
+
+```bash
+make test            # Go unit tests, Python tests, TypeScript tests, and the Go integration test
+make crash-suite     # 200 jobs, each killed at a random journal write, checked for exactly-once effects
+make lint
+```
+
+The integration test (`go/integration`) starts the Python tool server itself; set `HANA_PYTHON` to a Python with
+browser-gym installed (`make test-integration` uses the uv environment).
+
+## Related
+
+- Research: [durable agent runs](https://hanaml.com/research/durable-agent-runs),
+  [permission rules engine](https://hanaml.com/research/permission-rules-engine),
+  [browser agents](https://hanaml.com/research/browser-agents).
+- Paper: [The cost of reliability in long agent runs](https://hanaml.com/research/papers/cost-of-reliability-long-runs).
+- Model: [llama-toolcall-guard-1b](https://hanaml.com/models/llama-toolcall-guard-1b).
+- [hana-evals](https://github.com/hanaml-lab/hana-evals) runs long-job evaluations of agents built on this runtime.
+
+## Licence
+
+Apache-2.0. See `LICENSE`.
