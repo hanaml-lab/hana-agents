@@ -1,0 +1,13 @@
+# A disposable container per task run: browser-gym, its tasks, and Chromium with the
+# accessibility harness for agents that need screenshots of rendered pages.
+FROM mcr.microsoft.com/playwright/python:v1.48.0-noble
+
+RUN useradd --create-home --uid 10001 gym
+WORKDIR /opt/browser-gym
+COPY packages/agent-runtime-sdk /opt/agent-runtime-sdk
+COPY packages/browser-gym /opt/browser-gym
+RUN pip install --no-cache-dir /opt/agent-runtime-sdk /opt/browser-gym
+
+USER gym
+ENTRYPOINT ["browser-gym"]
+CMD ["run", "--suite", "/opt/browser-gym/tasks", "--out", "/tmp/runs"]
