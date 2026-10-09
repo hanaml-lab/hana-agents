@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.5.0 (2026-10-09)
+
+- browser tasks run as runtime jobs with irreversible submits held by policy
+- integration test
+
 ## 0.4.0 (2026-09-08)
 
 - browser-gym: site simulator, verifier, backtracking, step-by-step scoring
