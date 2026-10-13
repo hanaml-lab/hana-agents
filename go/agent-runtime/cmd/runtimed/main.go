@@ -146,6 +146,7 @@ type jobRequest struct {
 	Budget     runtime.Budget `json:"budget"`
 	Context    map[string]any `json:"context"`
 	MaxReturns int            `json:"max_returns_per_step"`
+	Untrusted  []string       `json:"untrusted"`
 }
 
 type jobStatus struct {
@@ -184,7 +185,7 @@ func routes(e *runtime.Engine, q worker.Queue) http.Handler {
 			return
 		}
 		job := runtime.Job{Goal: req.Goal, Principal: req.Principal, Plan: req.Plan, Budget: req.Budget,
-			Context: req.Context, MaxReturns: req.MaxReturns}
+			Context: req.Context, MaxReturns: req.MaxReturns, Untrusted: req.Untrusted}
 		id, err := e.Start(r.Context(), job)
 		if err != nil {
 			writeJSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
@@ -245,6 +246,23 @@ func routes(e *runtime.Engine, q worker.Queue) http.Handler {
 		}
 		_ = q.Put(r.Context(), worker.Task{JobID: id})
 		writeJSON(w, http.StatusOK, map[string]string{"id": id, "approved_by": body.Approver})
+	})
+	mux.HandleFunc("POST /jobs/{id}/reject", func(w http.ResponseWriter, r *http.Request) {
+		var body struct {
+			Approver string `json:"approver"`
+			Reason   string `json:"reason"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil || body.Approver == "" || body.Reason == "" {
+			writeJSON(w, http.StatusBadRequest, map[string]string{"error": "approver and reason are required"})
+			return
+		}
+		id := r.PathValue("id")
+		if err := e.Reject(r.Context(), id, body.Approver, body.Reason); err != nil {
+			writeJSON(w, http.StatusConflict, map[string]string{"error": err.Error()})
+			return
+		}
+		_ = q.Put(r.Context(), worker.Task{JobID: id})
+		writeJSON(w, http.StatusOK, map[string]string{"id": id, "refused_by": body.Approver})
 	})
 	return mux
 }

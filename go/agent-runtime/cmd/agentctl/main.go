@@ -6,6 +6,7 @@
 //	agentctl jobs replay <id>                rebuild state from the journal, without calling any tool
 //	agentctl jobs replay <id> -journal dir   the same, from a journal directory with no server
 //	agentctl jobs approve <id> -as <name>
+//	agentctl jobs reject <id> -as <name> -reason "payee changed by email"
 //
 // The server address comes from -server or AGENT_RUNTIME (default http://localhost:7070).
 package main
@@ -27,7 +28,7 @@ import (
 )
 
 func usage() {
-	fmt.Fprintln(os.Stderr, "usage: agentctl jobs start <plan.json> | list | tail <id> | replay <id> [-journal dir] | approve <id> -as <name>")
+	fmt.Fprintln(os.Stderr, "usage: agentctl jobs start <plan.json> | list | tail <id> | replay <id> [-journal dir] | approve <id> -as <name> | reject <id> -as <name> -reason <text>")
 	os.Exit(2)
 }
 
@@ -39,7 +40,8 @@ func main() {
 	fs := flag.NewFlagSet(cmd, flag.ExitOnError)
 	server := fs.String("server", envOr("AGENT_RUNTIME", "http://localhost:7070"), "runtimed address")
 	journalDir := fs.String("journal", "", "read a journal directory directly (replay only)")
-	as := fs.String("as", "", "approver name (approve only)")
+	as := fs.String("as", "", "approver name (approve and reject)")
+	reason := fs.String("reason", "", "why the call is refused (reject only)")
 	var id string
 	if len(rest) > 0 && !strings.HasPrefix(rest[0], "-") {
 		id, rest = rest[0], rest[1:]
@@ -61,6 +63,11 @@ func main() {
 			usage()
 		}
 		err = post(base+"/jobs/"+id+"/approve", map[string]string{"approver": *as}, os.Stdout)
+	case "reject":
+		if *as == "" || *reason == "" {
+			usage()
+		}
+		err = post(base+"/jobs/"+id+"/reject", map[string]string{"approver": *as, "reason": *reason}, os.Stdout)
 	default:
 		usage()
 	}
