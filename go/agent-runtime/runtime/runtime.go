@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"sort"
 	"sync"
+	"time"
 
 	"github.com/hanaml-lab/hana-agents/go/agent-runtime/internal/critic"
 	"github.com/hanaml-lab/hana-agents/go/agent-runtime/internal/journal"
@@ -38,10 +39,13 @@ type (
 	Event = journal.Event
 )
 
-// Budget caps a job. Zero means unlimited.
+// Budget caps a job. Zero means unlimited. Tokens and cost are summed from the "_usage" field of
+// tool results ({"tokens": n, "cost_usd": x}); time runs from the job's start, across restarts.
 type Budget struct {
-	Tokens int `json:"tokens"`
-	Steps  int `json:"steps"`
+	Tokens  int     `json:"tokens"`
+	Steps   int     `json:"steps"`
+	CostUSD float64 `json:"cost_usd,omitempty"`
+	Seconds int     `json:"seconds,omitempty"`
 }
 
 // Job is what a caller asks the runtime to do.
@@ -83,6 +87,8 @@ type Engine struct {
 	Planner Planner
 	Policy  Policy
 	Tracer  *otel.Tracer
+	// Now is the clock for time budgets and policy time windows; nil means time.Now.
+	Now func() time.Time
 
 	mu    sync.RWMutex
 	tools map[string]Tool
@@ -103,6 +109,13 @@ func (e *Engine) Register(ts ...Tool) {
 	for _, t := range ts {
 		e.tools[t.Name()] = t
 	}
+}
+
+func (e *Engine) now() time.Time {
+	if e.Now != nil {
+		return e.Now()
+	}
+	return time.Now()
 }
 
 func (e *Engine) tool(name string) (Tool, bool) {
@@ -250,6 +263,12 @@ func (e *Engine) step(ctx context.Context, st State, evs []journal.Event, s Step
 		if b := st.Spec.Budget; b.Tokens > 0 && st.Tokens >= b.Tokens {
 			return e.fail(ctx, st.ID, fmt.Sprintf("token budget of %d exhausted", b.Tokens))
 		}
+		if b := st.Spec.Budget; b.CostUSD > 0 && st.CostUSD >= b.CostUSD {
+			return e.fail(ctx, st.ID, fmt.Sprintf("cost budget of $%.2f exhausted ($%.2f spent)", b.CostUSD, st.CostUSD))
+		}
+		if b := st.Spec.Budget; b.Seconds > 0 && e.now().Sub(st.StartedAt) >= time.Duration(b.Seconds)*time.Second {
+			return e.fail(ctx, st.ID, fmt.Sprintf("time budget of %ds exhausted", b.Seconds))
+		}
 		if err := e.append(ctx, journal.Event{JobID: st.ID, Kind: journal.StepStarted, StepID: s.ID, Attempt: attempt,
 			Payload: journal.Payload(s)}); err != nil {
 			return err
@@ -279,7 +298,8 @@ func (e *Engine) step(ctx context.Context, st State, evs []journal.Event, s Step
 			polCtx[k] = v
 		}
 		polCtx["untrusted_args"] = untrustedArgs(s, st.Plan, st.Spec.Untrusted)
-		d := e.Policy.Decide(ctx, decide.Request{Principal: st.Spec.Principal, Action: s.Tool, Args: args, Context: polCtx})
+		d := e.Policy.Decide(ctx, decide.Request{Principal: st.Spec.Principal, Action: s.Tool, Args: args, Context: polCtx,
+			Now: e.now(), JobStarted: st.StartedAt})
 		digest, _ := approval.Digest(st.Spec.Principal, s.Tool, args)
 		_, approved := st.Approved[digest]
 		record := map[string]any{"outcome": d.Outcome.String(), "rule": d.Rule, "policy_version": d.Version,

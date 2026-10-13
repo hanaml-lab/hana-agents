@@ -2,6 +2,7 @@ package runtime
 
 import (
 	"encoding/json"
+	"time"
 
 	"github.com/hanaml-lab/hana-agents/go/agent-runtime/internal/journal"
 	"github.com/hanaml-lab/hana-agents/go/agent-runtime/internal/planner"
@@ -42,6 +43,8 @@ type State struct {
 	Started   map[string]bool // "step/attempt" pairs already counted against the budget
 	StepsUsed int
 	Tokens    int
+	CostUSD   float64
+	StartedAt time.Time // when the job was journalled; time budgets and "first" windows count from here
 	Pending   *PendingApproval
 	Approved  map[string]string // digest -> approver, not yet used
 	Refused   map[string]string // digest -> "refused by <approver>: <reason>"
@@ -60,7 +63,8 @@ type PendingApproval struct {
 
 type usage struct {
 	Usage struct {
-		Tokens int `json:"tokens"`
+		Tokens  int     `json:"tokens"`
+		CostUSD float64 `json:"cost_usd"`
 	} `json:"_usage"`
 }
 
@@ -73,7 +77,7 @@ func Fold(jobID string, events []journal.Event) State {
 		switch ev.Kind {
 		case journal.JobStarted:
 			_ = json.Unmarshal(ev.Payload, &st.Spec)
-			st.Status = StatusRunning
+			st.Status, st.StartedAt = StatusRunning, ev.At
 		case journal.Planned:
 			_ = json.Unmarshal(ev.Payload, &st.Plan)
 		case journal.StepStarted:
@@ -111,6 +115,7 @@ func Fold(jobID string, events []journal.Event) State {
 			var u usage
 			if json.Unmarshal(ev.Payload, &u) == nil {
 				st.Tokens += u.Usage.Tokens
+				st.CostUSD += u.Usage.CostUSD
 			}
 		case journal.PolicyDecided:
 			var d struct {
