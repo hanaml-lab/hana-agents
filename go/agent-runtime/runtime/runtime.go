@@ -53,6 +53,10 @@ type Job struct {
 	Plan       []Step         // optional: a plan written in advance; otherwise the planner plans
 	Context    map[string]any // passed to policy decisions
 	MaxReturns int            // how often the critic may send one step back; default 2
+	// Untrusted names tools whose output may carry instructions the agent must not follow, such
+	// as a mailbox or a browser. Arguments derived from their output reach the policy as
+	// context.untrusted_args.
+	Untrusted []string
 }
 
 // Policy decides tool calls. *decide.Engine satisfies it.
@@ -121,7 +125,7 @@ func (e *Engine) Start(ctx context.Context, job Job) (string, error) {
 	}
 	id := NewID()
 	spec := Spec{Goal: job.Goal, Principal: job.Principal, Tools: names, Budget: job.Budget, Plan: job.Plan,
-		Context: job.Context, MaxReturns: job.MaxReturns}
+		Context: job.Context, MaxReturns: job.MaxReturns, Untrusted: job.Untrusted}
 	_, err := e.Journal.Append(ctx, journal.Event{JobID: id, Kind: journal.JobStarted, Payload: journal.Payload(spec)})
 	return id, err
 }
@@ -258,6 +262,7 @@ func (e *Engine) step(ctx context.Context, st State, evs []journal.Event, s Step
 		for k, v := range st.Spec.Context {
 			polCtx[k] = v
 		}
+		polCtx["untrusted_args"] = untrustedArgs(s, st.Plan, st.Spec.Untrusted)
 		d := e.Policy.Decide(ctx, decide.Request{Principal: st.Spec.Principal, Action: s.Tool, Args: args, Context: polCtx})
 		digest, _ := approval.Digest(st.Spec.Principal, s.Tool, args)
 		_, approved := st.Approved[digest]

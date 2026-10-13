@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
+	"sort"
 	"strings"
 
 	"github.com/hanaml-lab/hana-agents/go/agent-runtime/internal/critic"
@@ -79,6 +80,31 @@ func Resolve(args map[string]any, results map[string]json.RawMessage) (map[strin
 		out[k] = r
 	}
 	return out, nil
+}
+
+// Sources lists the steps whose results a value refers to, in the order they appear.
+func Sources(v any) []string {
+	var out []string
+	switch x := v.(type) {
+	case string:
+		if m := ref.FindStringSubmatch(x); m != nil {
+			out = append(out, m[1])
+		}
+	case map[string]any:
+		keys := make([]string, 0, len(x))
+		for k := range x {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+		for _, k := range keys {
+			out = append(out, Sources(x[k])...)
+		}
+	case []any:
+		for _, it := range x {
+			out = append(out, Sources(it)...)
+		}
+	}
+	return out
 }
 
 func resolveValue(v any, results map[string]json.RawMessage) (any, error) {

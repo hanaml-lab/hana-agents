@@ -27,6 +27,7 @@ type Spec struct {
 	Plan       []Step         `json:"plan,omitempty"`
 	Context    map[string]any `json:"context,omitempty"`
 	MaxReturns int            `json:"max_returns_per_step"`
+	Untrusted  []string       `json:"untrusted_tools,omitempty"`
 }
 
 // State is a job folded from its events. Building it never calls a tool.
