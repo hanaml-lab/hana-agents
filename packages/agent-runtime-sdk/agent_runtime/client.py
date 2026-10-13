@@ -25,9 +25,10 @@ class Client:
             return json.load(resp)
 
     def start(self, goal: str, plan: list[dict] | None = None, principal: str = "", budget: dict | None = None,
-              context: dict | None = None) -> str:
+              context: dict | None = None, untrusted: list[str] | None = None) -> str:
+        """Start a job. ``untrusted`` names tools whose output the policy should treat as untrusted input."""
         job = {"goal": goal, "principal": principal, "plan": plan or [], "budget": budget or {},
-               "context": context or {}}
+               "context": context or {}, "untrusted": untrusted or []}
         return self._req("POST", "/jobs", job)["id"]
 
     def status(self, job_id: str) -> dict:
@@ -38,6 +39,10 @@ class Client:
 
     def approve(self, job_id: str, approver: str) -> dict:
         return self._req("POST", f"/jobs/{job_id}/approve", {"approver": approver})
+
+    def reject(self, job_id: str, approver: str, reason: str) -> dict:
+        """Refuse the held call; the job sends that step back to its planner with the reason."""
+        return self._req("POST", f"/jobs/{job_id}/reject", {"approver": approver, "reason": reason})
 
     def wait(self, job_id: str, timeout: float = 600, poll: float = 0.2) -> dict:
         """Block until the job is done, failed, or waiting for an approval; return its status."""
