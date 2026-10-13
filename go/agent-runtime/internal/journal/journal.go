@@ -26,6 +26,7 @@ const (
 	PolicyDecided  Kind = "policy_decided"
 	ApprovalNeeded Kind = "approval_needed"
 	Approved       Kind = "approved"
+	Rejected       Kind = "rejected"
 	ToolCalled     Kind = "tool_called"
 	ToolResult     Kind = "tool_result"
 	ToolFailed     Kind = "tool_failed"

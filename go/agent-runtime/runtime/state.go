@@ -44,6 +44,7 @@ type State struct {
 	Tokens    int
 	Pending   *PendingApproval
 	Approved  map[string]string // digest -> approver, not yet used
+	Refused   map[string]string // digest -> "refused by <approver>: <reason>"
 	Error     string
 	Events    int
 }
@@ -66,7 +67,8 @@ type usage struct {
 // Fold rebuilds a job's state from its journal.
 func Fold(jobID string, events []journal.Event) State {
 	st := State{ID: jobID, Status: StatusPending, Results: map[string]json.RawMessage{}, Attempt: map[string]int{},
-		Returns: map[string]int{}, Started: map[string]bool{}, Approved: map[string]string{}, Events: len(events)}
+		Returns: map[string]int{}, Started: map[string]bool{}, Approved: map[string]string{}, Refused: map[string]string{},
+		Events: len(events)}
 	for _, ev := range events {
 		switch ev.Kind {
 		case journal.JobStarted:
@@ -92,6 +94,17 @@ func Fold(jobID string, events []journal.Event) State {
 			_ = json.Unmarshal(ev.Payload, &a)
 			st.Approved[a.Digest] = a.Approver
 			if st.Pending != nil && st.Pending.Digest == a.Digest {
+				st.Pending, st.Status = nil, StatusRunning
+			}
+		case journal.Rejected:
+			var r struct {
+				Digest   string `json:"digest"`
+				Approver string `json:"approver"`
+				Reason   string `json:"reason"`
+			}
+			_ = json.Unmarshal(ev.Payload, &r)
+			st.Refused[r.Digest] = "refused by " + r.Approver + ": " + r.Reason
+			if st.Pending != nil && st.Pending.Digest == r.Digest {
 				st.Pending, st.Status = nil, StatusRunning
 			}
 		case journal.ToolResult:

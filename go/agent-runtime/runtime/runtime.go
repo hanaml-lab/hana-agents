@@ -156,6 +156,22 @@ func (e *Engine) Approve(ctx context.Context, id, approver string) error {
 	return err
 }
 
+// Reject records that a person refused the call the job is waiting on. On its next run the job
+// sends that step back to the planner with the reason; with no revision to offer, the job fails.
+// The refusal is bound to the call's digest, so a revised call with other arguments asks again.
+func (e *Engine) Reject(ctx context.Context, id, approver, reason string) error {
+	st, err := e.State(ctx, id)
+	if err != nil {
+		return err
+	}
+	if st.Pending == nil {
+		return fmt.Errorf("runtime: job %s is not waiting for an approval", id)
+	}
+	_, err = e.Journal.Append(ctx, journal.Event{JobID: id, Kind: journal.Rejected, StepID: st.Pending.StepID,
+		Payload: journal.Payload(map[string]string{"digest": st.Pending.Digest, "approver": approver, "reason": reason})})
+	return err
+}
+
 func (e *Engine) append(ctx context.Context, ev journal.Event) error {
 	_, err := e.Journal.Append(ctx, ev)
 	return err
@@ -276,6 +292,9 @@ func (e *Engine) step(ctx context.Context, st State, evs []journal.Event, s Step
 		case d.Outcome == decide.Forbid:
 			status = "forbidden"
 			return e.sendBack(ctx, st, s, attempt, fmt.Sprintf("policy forbids %s (rule %s)", s.Tool, d.Rule), nil, nil)
+		case d.Outcome == decide.Hold && !approved && st.Refused[digest] != "":
+			status = "refused"
+			return e.sendBack(ctx, st, s, attempt, "approval "+st.Refused[digest], nil, nil)
 		case d.Outcome == decide.Hold && !approved:
 			status = "held"
 			return e.append(ctx, journal.Event{JobID: st.ID, Kind: journal.ApprovalNeeded, StepID: s.ID, Attempt: attempt,
