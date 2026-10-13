@@ -1,6 +1,6 @@
 GO_DIR := go
 
-.PHONY: build test test-go test-python test-ts test-integration lint example crash-suite
+.PHONY: build test test-go test-python test-ts test-integration lint example crash-suite spec
 
 build:
 	cd $(GO_DIR) && go build -o ../bin/ ./agent-runtime/cmd/... ./policy-engine/cmd/...
@@ -25,6 +25,10 @@ test-integration:
 
 crash-suite:
 	cd $(GO_DIR) && go test -run TestCrashSuite -count=1 -v ./agent-runtime/runtime/
+
+# TLC model-checks the decision table and the approval rules, then confirms each seeded bug is caught.
+spec:
+	go/policy-engine/spec/check.sh
 
 lint:
 	uv run ruff check .

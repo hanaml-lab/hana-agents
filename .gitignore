@@ -19,3 +19,7 @@ dist/
 traces.jsonl
 packages/browser-gym/runs/*
 !packages/browser-gym/runs/README.md
+.cache/
+*_TTrace_*.tla
+*_TTrace_*.bin
+states/

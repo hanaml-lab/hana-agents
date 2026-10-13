@@ -1,0 +1,5 @@
+# Seeded bugs: name | the invariant TLC must report | text in Approvals.tla | its replacement (<NL> is a newline)
+any-approval|NoStaleApproval|         /\ g[2] = args<NL>|
+reusable-approval|SingleUse|Unspent == {g \in granted : g[1] \notin DOMAIN spentOn}|Unspent == granted
+no-dedup|NoDoubleCharge|    /\ IF \E e \in effects : e[1] = att|    /\ IF FALSE
+record-before-call|ExactlyOnce|Record ==<NL>    /\ pc = "called"|Record ==<NL>    /\ pc \in {"permitted", "called"}

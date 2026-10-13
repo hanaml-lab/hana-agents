@@ -51,7 +51,7 @@ The engine reads the subset of Cedar shown here: `permit`/`forbid`, a scope on p
 - **Approvals** are bound to a digest of the exact arguments. Approving a payment of 4,200 to one account does not approve 4,300 to another.
 - **Time windows.** `@window("Mon-Fri 09:00-17:30 Europe/Berlin")` or `@window("first 1h")` limits a rule to office hours, or to the first hour of a job.
 - **Audit.** Each decision is logged with the request, the outcome, the rule and the policy version, in a hash-chained JSON Lines file.
-- **Specification.** `spec/Decide.tla` models the decision table; its states are replayed as Go tests (`pkg/decide/testdata/tla-traces.json`).
+- **Specification.** `spec/Decide.tla` models the decision table; its states are replayed as Go tests (`pkg/decide/testdata/tla-traces.json`). `spec/Approvals.tla` models how agent-runtime spends approvals and calls tools across crashes and revisions; TLC checks that an effect runs only with an approval of exactly its arguments, that one approval pays for one attempt, that a key takes effect at most once and that a retry is never charged twice. `spec/check.sh` (`make spec`) runs TLC on both and then confirms that each seeded bug in `spec/mutants.txt` is caught by the invariant it names.
 
 ## Benchmarks
 
