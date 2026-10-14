@@ -156,7 +156,7 @@ The project's papers, in order; the later one builds on the earlier.
 
 | Date | Paper | What this repo implements | PDF | Paper repo |
 | --- | --- | --- | --- | --- |
-| 2025-12-09 | [The cost of reliability in long agent runs](https://hanaml.com/research/papers/cost-of-reliability-long-runs) | The runtime it measures: the journal, deterministic replay, idempotency keys, the critic and the crash suite. | [PDF](https://hanaml.com/papers/cost-of-reliability-long-runs.pdf) | [cost-of-reliability-long-runs](https://github.com/hanaml-lab/cost-of-reliability-long-runs) |
+| 2025-12-09 | [Where to Check: Budget-Optimal Placement of Verifiers and Rollbacks for Long-Horizon Agents](https://hanaml.com/research/papers/cost-of-reliability-long-runs) | The runtime it measures: the journal, deterministic replay, idempotency keys, the critic and the crash suite. | [PDF](https://hanaml.com/papers/cost-of-reliability-long-runs.pdf) | [cost-of-reliability-long-runs](https://github.com/hanaml-lab/cost-of-reliability-long-runs) |
 | 2026-05-14 | [Knowing When to Submit: Calibrated Completion Verifiers for Budgeted Search over Coding and Terminal Agent Trajectories](https://hanaml.com/research/papers/verifier-search-agents) | The setting it starts from: browser-gym's pre-submit verifier, backtracking and held irreversible actions. The calibrated verifiers, the budgeted search and the conformal bound are in the paper repo. | [PDF](https://hanaml.com/papers/verifier-search-agents.pdf) | [verifier-search-agents](https://github.com/hanaml-lab/verifier-search-agents) |
 
 ## Models
@@ -201,7 +201,7 @@ If you rely on the runtime's reliability results, please also cite the paper:
 ```bibtex
 @techreport{agarwal2025reliability,
   author      = {Agarwal, Manav},
-  title       = {The cost of reliability in long agent runs},
+  title       = {Where to Check: Budget-Optimal Placement of Verifiers and Rollbacks for Long-Horizon Agents},
   institution = {hanaML},
   type        = {Technical report},
   year        = {2025},

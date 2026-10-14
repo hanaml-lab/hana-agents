@@ -19,7 +19,7 @@ keywords:
   - browser agents
 references:
   - type: report
-    title: "The cost of reliability in long agent runs"
+    title: "Where to Check: Budget-Optimal Placement of Verifiers and Rollbacks for Long-Horizon Agents"
     authors:
       - family-names: Agarwal
         given-names: Manav
