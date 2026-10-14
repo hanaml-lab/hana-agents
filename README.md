@@ -129,23 +129,35 @@ Each of these runs offline on a laptop, and CI runs all of them.
 | `make crash-suite` | 200 jobs, each killed at a random journal write and resumed by a fresh engine | 200 of 200 complete, with exactly one external effect per effectful step |
 | `make spec` | TLC on `Decide.tla` (16 states) and `Approvals.tla` (3,622 states), then 4 mutants of `Approvals.tla` with a seeded bug each | no invariant violated; 4 of 4 mutants caught |
 
-### Reported for the project
+### Reported in the papers
 
-From the [durable agents](https://hanaml.com/research/durable-agents) project page. The benchmark runs need models
-and harnesses that are not in this repo (tau-bench, AgentDojo, WebArena, OSWorld);
-`go/policy-engine/bench/agentdojo` replays exported AgentDojo tool calls through the policies.
+The project's two papers report these numbers; each row quotes its paper. Both papers are seeded simulation studies
+calibrated to public figures, as their limitations sections say. BELAY's crash study measures this repo's journal
+and idempotency keys; BELAY's placement program and CCV's calibrated verifiers are in the paper repos.
 
-| Metric | Baseline | hana-agents | Note |
+| Metric | Baseline | Result | Setting | Paper |
+| --- | --- | --- | --- | --- |
+| Task success, τ-bench retail | 52.2% | 63.6% | Qwen3-32B; single agent vs. BELAY at λ₀ = 0.2 and 1.22× tokens; a critic after every step reaches 64.9% at 2.08× | [BELAY](https://hanaml.com/research/papers/cost-of-reliability-long-runs) |
+| Task success, 200 back-office jobs | 48.4% | 67.9% | Single agent vs. BELAY at 1.21× tokens; a critic after every step reaches 61.8% at 2.06× | BELAY |
+| Prediction error on held-out policies (MAE) | 4.5 pts | 0.8 pts | Independent-step fit vs. BELAY's model; 52 held-out (policy, benchmark) pairs | BELAY |
+| Jobs that still succeed after an injected crash | 38% | 97% | Restarting an in-memory loop vs. journal plus idempotency keys; 200 back-office jobs, one crash each | BELAY |
+| Duplicate side effects per 100 jobs | 4.9 | 0.0 | Restart from scratch vs. journal plus idempotency keys; the same crashes | BELAY |
+| Resolved, SWE-bench Verified, equal tokens | 64.0% | 71.5% | Qwen3-Coder-30B-A3B in OpenHands; hybrid-verifier best-of-8 vs. CCV adaptive, which matches 64.0% with 61% fewer tokens | [CCV](https://hanaml.com/research/papers/verifier-search-agents) |
+| Solved, Terminal-Bench 2.0, equal compute | 36.2% | 43.8% | Qwen3-Coder-480B-A35B in Terminus 2; hybrid-verifier best-of-8 vs. CCV adaptive | CCV |
+
+### Reported by the components
+
+`go/policy-engine` and `packages/browser-gym` report these in their READMEs; no paper covers them.
+`go/policy-engine/bench/agentdojo` replays exported AgentDojo tool calls through the policies; the WebArena and
+OSWorld runs need models and harnesses that are not in this repo.
+
+| Metric | Baseline | Result | Note |
 | --- | --- | --- | --- |
-| Jobs completed after injected worker crash | 38% | 97% | In-memory loop vs. event-sourced replay; 200 synthetic back-office jobs |
 | Injection attacks leading to a forbidden action, AgentDojo | 24% | 0.8% | Prompt-level defence vs. tool-boundary policy; same agent |
-| WebArena task success | 31.5% | 39.8% | Same VLM; with verifier and backtracking |
-| Duplicate external side effects per 100 jobs | 4.6 | 0.0 | Idempotency keys on every tool call |
-| Token spend vs. single-agent baseline | 1.00x | 1.34x | Critic and re-planning overhead |
-| Task success, tau-bench retail | 52% | 61% | Same model; planner/critic vs. single ReAct agent |
 | Benign task success, AgentDojo | 69% | 64% | Cost of stricter policy on legitimate tasks |
 | Policy check latency p99 | n/a | 2.1 ms | Cedar evaluation incl. approval-digest lookup |
 | Seeded policy bugs caught by model checking | 11 of 20 | 19 of 20 | Unit tests alone vs. unit tests + TLA+ traces |
+| WebArena task success | 31.5% | 39.8% | Same VLM; with verifier and backtracking |
 | OSWorld success (screenshot + a11y tree) | 18.2% | 23.9% | 369-task suite, 50-step limit |
 | Irreversible wrong submissions | 9.1% | 2.4% | Share of tasks ending in a wrong form submit |
 | Mean steps per successful task | 14.2 | 17.6 | Recovery adds steps |
@@ -156,7 +168,7 @@ The project's papers, in order; the later one builds on the earlier.
 
 | Date | Paper | What this repo implements | PDF | Paper repo |
 | --- | --- | --- | --- | --- |
-| 2025-12-09 | [Where to Check: Budget-Optimal Placement of Verifiers and Rollbacks for Long-Horizon Agents](https://hanaml.com/research/papers/cost-of-reliability-long-runs) | The runtime it measures: the journal, deterministic replay, idempotency keys, the critic and the crash suite. | [PDF](https://hanaml.com/papers/cost-of-reliability-long-runs.pdf) | [cost-of-reliability-long-runs](https://github.com/hanaml-lab/cost-of-reliability-long-runs) |
+| 2025-12-09 | [Where to Check: Budget-Optimal Placement of Verifiers and Rollbacks for Long-Horizon Agents](https://hanaml.com/research/papers/cost-of-reliability-long-runs) | The runtime it measures: the journal, deterministic replay, idempotency keys, the critic and the crash suite. The derailment model and the placement program are in the paper repo. | [PDF](https://hanaml.com/papers/cost-of-reliability-long-runs.pdf) | [cost-of-reliability-long-runs](https://github.com/hanaml-lab/cost-of-reliability-long-runs) |
 | 2026-05-14 | [Knowing When to Submit: Calibrated Completion Verifiers for Budgeted Search over Coding and Terminal Agent Trajectories](https://hanaml.com/research/papers/verifier-search-agents) | The setting it starts from: browser-gym's pre-submit verifier, backtracking and held irreversible actions. The calibrated verifiers, the budgeted search and the conformal bound are in the paper repo. | [PDF](https://hanaml.com/papers/verifier-search-agents.pdf) | [verifier-search-agents](https://github.com/hanaml-lab/verifier-search-agents) |
 
 ## Models

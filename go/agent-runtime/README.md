@@ -70,17 +70,20 @@ A job sets `max_returns_per_step` (default 2): how often the critic may send one
 
 ## Benchmarks
 
-200 synthetic back-office jobs, with a worker killed at a random step in each. `make crash-suite` runs the
-exactly-once part of this suite (200 jobs, a crash at a random journal write, no duplicate effects).
+The crash study of the [BELAY paper](https://hanaml.com/research/papers/cost-of-reliability-long-runs) (its Table 1):
+200 synthetic back-office jobs, one worker crash injected per job at a random time, five seeds. Kept is the share of
+the jobs that succeed without a crash that still succeed with one. `make crash-suite` runs the exactly-once part of
+this study offline (200 jobs, a crash at a random journal write, no duplicate effects).
 
-| Metric | In-memory agent loop | agent-runtime |
-| --- | --- | --- |
-| Jobs completed after an injected crash | 38% | 97% |
-| Duplicate external side effects per 100 jobs | 4.6 | 0.0 |
-| Token spend | 1.00x | 1.34x |
-| Task success, tau-bench retail (same model) | 52% | 61% |
+| Recovery | Kept | Duplicate side effects per 100 jobs | Wall-clock overhead |
+| --- | --- | --- | --- |
+| Restart from scratch (in-memory loop) | 38% | 4.9 | n/a |
+| Snapshot every 10 steps | 84% | 1.7 | 1% |
+| Journal, no idempotency keys | 96% | 1.3 | 3% |
+| Journal and idempotency keys (agent-runtime) | 97% | 0.0 | 3% |
 
-The critic and re-planning cost about a third more tokens.
+The journal costs no tokens. Where a run should spend tokens on critics and rollbacks is the paper's main question;
+its placement program is in the paper repo, and its results are in the [top-level README](../../README.md#results).
 
 ## Licence
 
