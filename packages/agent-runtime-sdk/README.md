@@ -1,7 +1,7 @@
 # agent-runtime-sdk
 
 Python SDK for [agent-runtime](../../go/agent-runtime): serve Python functions as runtime tools, with results
-stored by idempotency key, and start, follow and approve jobs over runtimed's HTTP API.
+stored by idempotency key, and start, follow, approve and refuse jobs over runtimed's HTTP API.
 
 ```python
 from agent_runtime import Client, ToolServer, tool
@@ -15,8 +15,11 @@ ToolServer([read_ledger], results="tool-results.sqlite").serve(port=7071)
 
 ```python
 client = Client("http://localhost:7070")
-job = client.start("Reconcile September", plan=[{"id": "read", "tool": "ledger.read", "args": {"period": "2026-09"}}])
-print(client.wait(job))
+job = client.start("Reconcile September", plan=[{"id": "read", "tool": "ledger.read", "args": {"period": "2026-09"}}],
+                   untrusted=["inbox.read"])
+status = client.wait(job)                 # done, or waiting_approval with the held call
+if status["status"] == "waiting_approval":
+    client.reject(job, "maria", "wrong supplier contact")   # or client.approve(job, "maria")
 ```
 
 Apache-2.0.

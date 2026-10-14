@@ -24,7 +24,8 @@ Go 1.25 or later. A Python SDK for writing tools lives in `packages/agent-runtim
 job := runtime.Job{
     Goal:   "Reconcile the September invoices against the ledger and flag mismatches",
     Tools:  []runtime.Tool{ledgerRead, invoicesList, emailDraft},
-    Budget: runtime.Budget{Tokens: 400_000, Steps: 120},
+    Budget: runtime.Budget{Tokens: 400_000, Steps: 120, CostUSD: 5, Seconds: 4 * 3600},
+    Untrusted: []string{"invoices.list"},   // supplier-written text: arguments from it reach the policy as untrusted
 }
 client := runtime.NewClient(ctx, runtime.NewEngine(journal, planner, policy), 16)
 id, err := client.Start(ctx, job)
@@ -40,6 +41,7 @@ result, err := client.Wait(ctx, id)   // survives restarts: Engine.Run resumes f
 agentctl jobs tail 01J9ZQ...    # watch steps as they are journalled
 agentctl jobs replay 01J9ZQ...  # rebuild state from the journal, without calling any tool
 agentctl jobs approve 01J9ZQ... -as maria
+agentctl jobs reject 01J9ZQ... -as maria -reason "wrong supplier contact"
 ```
 
 ## Architecture
@@ -47,7 +49,9 @@ agentctl jobs approve 01J9ZQ... -as maria
 - **Planner** breaks the goal into steps with explicit inputs and outputs (a written plan, or a model through an OpenAI-compatible endpoint).
 - **Workers** lease jobs from a queue with heartbeats, call the tools, and write each result to the journal. A worker that stops heartbeating loses its lease and another worker resumes the job.
 - **Critic** checks each result against the step's acceptance test and can send a step back to the planner, with the failed check attached.
-- **Policy.** Before every tool call the policy engine answers allow, hold or forbid. A hold waits for a person's approval, bound to a digest of the exact arguments.
+- **Policy.** Before every tool call the policy engine answers allow, hold or forbid. A hold waits for a person's approval, bound to a digest of the exact arguments and spent once; a refusal sends the step back to the planner with the reason.
+- **Provenance.** Tools named in `Job.Untrusted` produce untrusted output. Arguments that derive from it, through any chain of step references, are listed in `context.untrusted_args` for the policy, so a rule can hold a payment whose payee came from an invoice.
+- **Budgets** in steps, tokens, cost and wall-clock time, summed from `_usage` in tool results and counted from the `job_started` event, so a restart does not reset them.
 - **Journal** is append-only: a JSON Lines file per job, or a PostgreSQL table (`migrations/0001_journal.sql`). Replaying it is deterministic and calls no tool.
 - **Idempotency.** Every tool call carries a key derived from the job, the step and the attempt. A result already in the journal is reused; a call that was started but not recorded is repeated with the same key, and tools deduplicate on it (the Python SDK does this for you).
 

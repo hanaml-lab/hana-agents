@@ -1,0 +1,38 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+type: software
+title: "hana-agents: a durable runtime for long agent jobs with permission rules at the tool boundary"
+version: 0.6.0
+date-released: 2026-10-14
+license: Apache-2.0
+repository-code: "https://github.com/hanaml-lab/hana-agents"
+url: "https://hanaml.com/research/durable-agents"
+authors:
+  - name: "hanaML"
+keywords:
+  - agents
+  - durable execution
+  - event sourcing
+  - access control
+  - Cedar
+  - TLA+
+  - browser agents
+references:
+  - type: report
+    title: "The cost of reliability in long agent runs"
+    authors:
+      - family-names: Agarwal
+        given-names: Manav
+    institution:
+      name: hanaML
+    year: 2025
+    url: "https://hanaml.com/research/papers/cost-of-reliability-long-runs"
+  - type: report
+    title: "Knowing When to Submit: Calibrated Completion Verifiers for Budgeted Search over Coding and Terminal Agent Trajectories"
+    authors:
+      - family-names: Agarwal
+        given-names: Manav
+    institution:
+      name: hanaML
+    year: 2026
+    url: "https://hanaml.com/research/papers/verifier-search-agents"
