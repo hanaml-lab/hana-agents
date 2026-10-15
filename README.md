@@ -137,13 +137,13 @@ and idempotency keys; BELAY's placement program and CCV's calibrated verifiers a
 
 | Metric | Baseline | Result | Setting | Paper |
 | --- | --- | --- | --- | --- |
-| Task success, τ-bench retail | 52.2% | 63.6% | Qwen3-32B; single agent vs. BELAY at λ₀ = 0.2 and 1.22× tokens; a critic after every step reaches 64.9% at 2.08× | [BELAY](https://hanaml.com/research/papers/cost-of-reliability-long-runs) |
-| Task success, 200 back-office jobs | 48.4% | 67.9% | Single agent vs. BELAY at 1.21× tokens; a critic after every step reaches 61.8% at 2.06× | BELAY |
+| Task success, τ-bench retail | 52.3% | 63.5% | Qwen3-32B; single agent vs. BELAY at λ₀ = 0.2 and 1.22× tokens; a critic after every step reaches 65.0% at 2.08× | [BELAY](https://hanaml.com/research/papers/cost-of-reliability-long-runs) |
+| Task success, 200 back-office jobs | 47.8% | 67.7% | Single agent vs. BELAY at 1.21× tokens; a critic after every step reaches 62.4% at 2.06× | BELAY |
 | Prediction error on held-out policies (MAE) | 4.5 pts | 0.8 pts | Independent-step fit vs. BELAY's model; 52 held-out (policy, benchmark) pairs | BELAY |
 | Jobs that still succeed after an injected crash | 38% | 97% | Restarting an in-memory loop vs. journal plus idempotency keys; 200 back-office jobs, one crash each | BELAY |
 | Duplicate side effects per 100 jobs | 4.9 | 0.0 | Restart from scratch vs. journal plus idempotency keys; the same crashes | BELAY |
-| Resolved, SWE-bench Verified, equal tokens | 64.0% | 71.5% | Qwen3-Coder-30B-A3B in OpenHands; hybrid-verifier best-of-8 vs. CCV adaptive, which matches 64.0% with 61% fewer tokens | [CCV](https://hanaml.com/research/papers/verifier-search-agents) |
-| Solved, Terminal-Bench 2.0, equal compute | 36.2% | 43.8% | Qwen3-Coder-480B-A35B in Terminus 2; hybrid-verifier best-of-8 vs. CCV adaptive | CCV |
+| Resolved, SWE-bench Verified, equal tokens | 64.0% | 71.5% | Qwen3-Coder-30B-A3B in OpenHands; hybrid-verifier best-of-8 vs. CCV adaptive, which reaches 68.8% with 40% fewer tokens at the threshold set to match it | [CCV](https://hanaml.com/research/papers/verifier-search-agents) |
+| Solved, Terminal-Bench 2.0, near-equal compute | 36.2% | 43.8% | Qwen3-Coder-480B-A35B in Terminus 2; hybrid-verifier best-of-8 (10.91M tokens per task) vs. CCV adaptive (11.57M) | CCV |
 
 ### Reported by the components
 
